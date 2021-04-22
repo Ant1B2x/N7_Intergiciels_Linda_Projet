@@ -31,6 +31,7 @@ build/Release
 # IDEs and editors (shamelessly copied from @angular/cli's .gitignore)
 .idea
 */.idea
+*.iml
 .project
 .classpath
 .c9/
@@ -110,3 +111,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Others
+out/
