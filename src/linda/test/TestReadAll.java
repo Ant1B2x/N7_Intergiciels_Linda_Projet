@@ -1,28 +1,34 @@
 package linda.test;
 
-import linda.*;
+import linda.Linda;
+import linda.Tuple;
 
-public class BasicTest1 {
+import java.util.Collection;
+
+// Anciennement BasicTest1
+public class TestReadAll {
 
     public static void main(String[] a) {
-                
+
         final Linda linda = new linda.shm.CentralizedLinda();
         // final Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
-                
+
         new Thread() {
             public void run() {
                 try {
-                    Thread.sleep(2);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 Tuple motif = new Tuple(Integer.class, String.class);
-                Tuple res = linda.take(motif);
-                System.out.println("(1) Resultat:" + res);
-                linda.debug("(1)");
+                Collection<Tuple> res = linda.readAll(motif);
+                for (Tuple t : res) {
+                    System.out.println("(0) Resultat:" + t);
+                }
+                linda.debug("(0)");
             }
         }.start();
-                
+
         new Thread() {
             public void run() {
                 try {
@@ -30,27 +36,43 @@ public class BasicTest1 {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                Tuple motif = new Tuple(Integer.class, String.class);
+                Collection<Tuple> res = linda.readAll(motif);
+                for (Tuple t : res) {
+                    System.out.println("(1) Resultat:" + t);
+                }
+                linda.debug("(1)");
+            }
+        }.start();
 
-                Tuple t1 = new Tuple(4, 5);
+        new Thread() {
+            public void run() {
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Tuple t1 = new Tuple(4, "oui");
                 System.out.println("(2) write: " + t1);
                 linda.write(t1);
 
-                Tuple t11 = new Tuple(4, 5);
+                Tuple t11 = new Tuple(6, "non");
                 System.out.println("(2) write: " + t11);
                 linda.write(t11);
 
-                Tuple t2 = new Tuple("hello", 15);
+                Tuple t2 = new Tuple(3, "peut être");
                 System.out.println("(2) write: " + t2);
                 linda.write(t2);
 
-                Tuple t3 = new Tuple(4, "foo");
+                Tuple t3 = new Tuple(4, "pourquoi pas");
                 System.out.println("(2) write: " + t3);
                 linda.write(t3);
-                                
+
                 linda.debug("(2)");
 
             }
         }.start();
-                
+
     }
 }

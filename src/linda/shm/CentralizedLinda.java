@@ -30,11 +30,16 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple take(Tuple template) {
-        Tuple result = this.read(template);
-
-
-        this.tuples.remove(result);
-        return result;
+        while (true) {
+            synchronized (MUTEX) {
+                for (Tuple t : this.tuples) {
+                    if (t.matches(template)) {
+                        this.tuples.remove(t);
+                        return t;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -52,36 +57,53 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple tryTake(Tuple template) {
-        Tuple result = this.tryRead(template);
-
-        this.tuples.remove(result);
-        return result;
+        synchronized (MUTEX) {
+            for (Tuple t : this.tuples) {
+                if (t.matches(template)) {
+                    this.tuples.remove(t);
+                    return t;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public Tuple tryRead(Tuple template) {
-        for (Tuple t : this.tuples)
-            if (t.matches(template))
-                return t;
-
+        synchronized (MUTEX) {
+            for (Tuple t : this.tuples) {
+                if (t.matches(template)) {
+                    return t;
+                }
+            }
+        }
         return null;
     }
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
-        Collection<Tuple> result = this.readAll(template);
-
-        result.forEach(t -> this.tuples.remove(t));
+        Collection<Tuple> result = new HashSet<>();
+        synchronized (MUTEX) {
+            for (Tuple t : this.tuples) {
+                if (t.matches(template)) {
+                    result.add(t);
+                }
+            }
+            result.forEach(t -> this.tuples.remove(t));
+        }
         return result;
     }
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
         Collection<Tuple> result = new HashSet<>();
-        for (Tuple t : this.tuples)
-            if (t.matches(template))
-                result.add(t);
-
+        synchronized (MUTEX) {
+            for (Tuple t : this.tuples) {
+                if (t.matches(template)) {
+                    result.add(t);
+                }
+            }
+        }
         return result;
     }
 

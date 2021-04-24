@@ -2,8 +2,7 @@ package linda.test;
 
 import linda.*;
 
-// Anciennement BasicTest1
-public class TestTake {
+public class TestRead {
 
     public static void main(String[] a) {
 
@@ -18,7 +17,7 @@ public class TestTake {
                     e.printStackTrace();
                 }
                 Tuple motif = new Tuple(Integer.class, String.class);
-                Tuple res = linda.take(motif);
+                Tuple res = linda.read(motif);
                 System.out.println("(1) Resultat:" + res);
                 linda.debug("(1)");
             }

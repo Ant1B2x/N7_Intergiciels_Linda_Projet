@@ -1,8 +1,9 @@
 package linda.test;
 
-import linda.*;
+import linda.Linda;
+import linda.Tuple;
 
-public class BasicTest2 {
+public class TestMultipleTake {
 
     public static void main(String[] a) {
         final Linda linda = new linda.shm.CentralizedLinda();
@@ -18,13 +19,13 @@ public class BasicTest2 {
                         e.printStackTrace();
                     }
                     Tuple motif = new Tuple(Integer.class, String.class);
-                    Tuple res = linda.read(motif);
+                    Tuple res = linda.take(motif);
                     System.out.println("("+j+") Resultat:" + res);
                     linda.debug("("+j+")");
                 }
             }.start();
         }
-                
+
         new Thread() {
             public void run() {
                 try {
@@ -37,16 +38,36 @@ public class BasicTest2 {
                 System.out.println("(0) write: " + t1);
                 linda.write(t1);
 
-                Tuple t2 = new Tuple("hello", 15);
+                linda.debug("(0)");
+
+                Tuple t2 = new Tuple(42, "bar");
                 System.out.println("(0) write: " + t2);
                 linda.write(t2);
 
                 linda.debug("(0)");
 
-                Tuple t3 = new Tuple(4, "foo");
+                Tuple t3 = new Tuple("hello", 15);
                 System.out.println("(0) write: " + t3);
                 linda.write(t3);
+
+                linda.debug("(0)");
+
+                Tuple t4 = new Tuple(4, "foo");
+                System.out.println("(0) write: " + t4);
+                linda.write(t4);
                                 
+                linda.debug("(0)");
+
+                Tuple t5 = new Tuple("goodbye", 75);
+                System.out.println("(0) write: " + t5);
+                linda.write(t5);
+
+                linda.debug("(0)");
+
+                Tuple t6 = new Tuple(13, "banane");
+                System.out.println("(0) write: " + t6);
+                linda.write(t6);
+
                 linda.debug("(0)");
 
             }
