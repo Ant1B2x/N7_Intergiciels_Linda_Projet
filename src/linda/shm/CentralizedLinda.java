@@ -4,26 +4,63 @@ import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Shared memory implementation of Linda.
  */
 public class CentralizedLinda implements Linda {
 
+    private class CallbackTriplet {
+        private eventMode mode;
+        private Tuple template;
+        private Callback callback;
+
+        public CallbackTriplet(eventMode mode, Tuple template, Callback callback) {
+            this.mode = mode;
+            this.template = template;
+            this.callback = callback;
+        }
+
+        public eventMode getMode() {
+            return this.mode;
+        }
+
+        public Tuple getTemplate() {
+            return this.template;
+        }
+
+        public Callback getCallback() {
+            return this.callback;
+        }
+    }
+
     private static final Object MUTEX = new Object();
 
     private Collection<Tuple> tuples;
+    private Collection<CallbackTriplet> callbacks;
 
     public CentralizedLinda() {
         this.tuples = new HashSet<>();
+        this.callbacks = new HashSet<CallbackTriplet>();
     }
 
     @Override
     public void write(Tuple t) {
         synchronized (MUTEX) {
+
+            // Chercher un callback qui avait demandé un tel tuple
+            for (CallbackTriplet ct : this.callbacks) {
+                if (t.matches(ct.getTemplate())) {
+                    // Transmettre le tuple au callback
+                    ct.getCallback().call(t);
+
+                    // Si on est en mode take, on ne veut pas ajouter le tuple dans l'espace partagé
+                    if (ct.getMode() == eventMode.TAKE)
+                        return;
+                }
+            }
+
             this.tuples.add(t);
         }
     }
@@ -109,14 +146,23 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
+        Tuple t = null;
 
+        if (timing == eventTiming.IMMEDIATE)
+            if (mode == eventMode.READ)
+                t = this.tryRead(template);
+            else if (mode == eventMode.TAKE)
+                t = this.tryTake(template);
+
+        if (t != null)
+            callback.call(t);
+        else
+            this.callbacks.add(new CallbackTriplet(mode, template, callback));
     }
 
     @Override
     public void debug(String prefix) {
 
     }
-
-    // TO BE COMPLETED
 
 }
