@@ -41,8 +41,8 @@ public class CentralizedLinda implements Linda {
     private Collection<CallbackTriplet> callbacks;
 
     public CentralizedLinda() {
-        this.tuples = new HashSet<>(); // Utiliser un HashSet est OK ici car on a pas implémenté clone() dans Tuple
-        this.callbacks = new HashSet<>();
+        this.tuples = new LinkedList<>();
+        this.callbacks = new LinkedList<>();
     }
 
     @Override
@@ -119,7 +119,7 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
-        Collection<Tuple> result = new HashSet<>();
+        Collection<Tuple> result = new LinkedList<>();
         synchronized (MUTEX) {
             for (Tuple t : this.tuples) {
                 if (t.matches(template)) {
@@ -133,7 +133,7 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
-        Collection<Tuple> result = new HashSet<>();
+        Collection<Tuple> result = new LinkedList<>();
         synchronized (MUTEX) {
             for (Tuple t : this.tuples) {
                 if (t.matches(template)) {
