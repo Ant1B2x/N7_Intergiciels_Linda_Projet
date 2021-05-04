@@ -41,8 +41,8 @@ public class CentralizedLinda implements Linda {
     private Collection<CallbackTriplet> callbacks;
 
     public CentralizedLinda() {
-        this.tuples = new HashSet<>();
-        this.callbacks = new HashSet<CallbackTriplet>();
+        this.tuples = new HashSet<>(); // TODO remplacer par autre chose qu'un set
+        this.callbacks = new HashSet<>();
     }
 
     @Override
@@ -119,7 +119,7 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
-        Collection<Tuple> result = new HashSet<>();
+        Collection<Tuple> result = new HashSet<>(); // TODO changer type
         synchronized (MUTEX) {
             for (Tuple t : this.tuples) {
                 if (t.matches(template)) {
