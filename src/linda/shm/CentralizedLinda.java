@@ -67,24 +67,31 @@ public class CentralizedLinda implements Linda {
     @Override
     public void write(Tuple t) {
         synchronized (MUTEX) {
+            // Liste des callbacks appelés (à supprimer)
+            Collection<CallbackTriplet> calledCallbacks = new LinkedList<>();
 
-            // TODO : SUPPRIMER CALLBACKS APPELES
+            // Ajouter le tuple à l'espace de tuple
+            this.tuples.add(t);
 
             // Chercher un callback qui avait demandé un tel tuple
-            if (this.callbacks.size() == 1) System.out.println("un element");
-            if (this.callbacks.size() == 2) System.out.println("deux elements");
             for (CallbackTriplet ct : this.callbacks) {
                 if (t.matches(ct.getTemplate())) {
+                    // Ajouter le callback à la liste des callbacks appelés
+                    calledCallbacks.add(ct);
+
                     // Transmettre le tuple au callback
                     ct.getCallback().call(t);
 
-                    // Si on est en mode take, on ne veut pas ajouter le tuple dans l'espace partagé
-                    if (ct.getMode() == eventMode.TAKE)
-                        return;
+                    // Si on est en mode take, on ne veut pas garder le tuple dans l'espace partagé
+                    if (ct.getMode() == eventMode.TAKE) {
+                        this.tuples.remove(t);
+                        break;
+                    }
                 }
             }
 
-            this.tuples.add(t);
+            // Supprimer les callbacks appelés de la liste des callbacks courants
+            calledCallbacks.forEach(ct -> this.callbacks.remove(ct));
         }
     }
 
