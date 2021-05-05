@@ -5,7 +5,6 @@ import linda.Tuple;
 
 import java.util.Collection;
 
-// Anciennement BasicTest1
 public class TestReadAll {
 
     public static void main(String[] a) {
