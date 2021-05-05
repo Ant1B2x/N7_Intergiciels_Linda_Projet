@@ -1,6 +1,5 @@
 package linda.shm;
 
-import linda.AsynchronousCallback;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
@@ -69,7 +68,11 @@ public class CentralizedLinda implements Linda {
     public void write(Tuple t) {
         synchronized (MUTEX) {
 
+            // TODO : SUPPRIMER CALLBACKS APPELES
+
             // Chercher un callback qui avait demandé un tel tuple
+            if (this.callbacks.size() == 1) System.out.println("un element");
+            if (this.callbacks.size() == 2) System.out.println("deux elements");
             for (CallbackTriplet ct : this.callbacks) {
                 if (t.matches(ct.getTemplate())) {
                     // Transmettre le tuple au callback
@@ -87,23 +90,33 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple take(Tuple template) {
+        // Créer un callback et l'enregister
         InternalCallback cb = new InternalCallback();
         this.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, template, cb);
+
+        // Attendre que le callback ait été appelé
         try {
             cb.semaphore.acquire();
         } catch (InterruptedException e) {
         }
+
+        // Retourner le tuple pris
         return cb.tuple;
     }
 
     @Override
     public Tuple read(Tuple template) {
+        // Créer un callback et l'enregister
         InternalCallback cb = new InternalCallback();
         this.eventRegister(eventMode.READ, eventTiming.IMMEDIATE, template, cb);
+
+        // Attendre que le callback ait été appelé
         try {
             cb.semaphore.acquire();
         } catch (InterruptedException e) {
         }
+
+        // Retourner le tuple lu
         return cb.tuple;
     }
 
@@ -163,16 +176,22 @@ public class CentralizedLinda implements Linda {
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
         Tuple t = null;
 
-        if (timing == eventTiming.IMMEDIATE)
-            if (mode == eventMode.READ)
+        if (timing == eventTiming.IMMEDIATE) {
+            if (mode == eventMode.READ) {
                 t = this.tryRead(template);
-            else if (mode == eventMode.TAKE)
+            } else if (mode == eventMode.TAKE) {
                 t = this.tryTake(template);
+            }
+        }
 
-        if (t != null)
+        if (t != null) {
             callback.call(t);
-        else
-            this.callbacks.add(new CallbackTriplet(mode, template, callback));
+        }
+        else {
+            synchronized (MUTEX) {
+                this.callbacks.add(new CallbackTriplet(mode, template, callback));
+            }
+        }
     }
 
     @Override
