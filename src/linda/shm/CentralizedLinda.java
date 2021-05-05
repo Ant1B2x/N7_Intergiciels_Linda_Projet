@@ -1,20 +1,40 @@
 package linda.shm;
 
+import linda.AsynchronousCallback;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * Shared memory implementation of Linda.
  */
 public class CentralizedLinda implements Linda {
 
+    /**
+     * Callback used for read and take
+     */
+    private class InternalCallback implements Callback {
+        private Tuple tuple;
+        private Semaphore semaphore;
+
+        public InternalCallback() {
+            this.semaphore = new Semaphore(0);
+        }
+
+        @Override
+        public void call(Tuple t) {
+            this.tuple = t;
+            this.semaphore.release();
+        }
+    }
+
     private class CallbackTriplet {
-        private eventMode mode;
-        private Tuple template;
-        private Callback callback;
+        private final eventMode mode;
+        private final Tuple template;
+        private final Callback callback;
 
         public CallbackTriplet(eventMode mode, Tuple template, Callback callback) {
             this.mode = mode;
@@ -67,29 +87,24 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple take(Tuple template) {
-        while (true) {
-            synchronized (MUTEX) {
-                for (Tuple t : this.tuples) {
-                    if (t.matches(template)) {
-                        this.tuples.remove(t);
-                        return t;
-                    }
-                }
-            }
+        InternalCallback cb = new InternalCallback();
+        this.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, template, cb);
+        try {
+            cb.semaphore.acquire();
+        } catch (InterruptedException e) {
         }
+        return cb.tuple;
     }
 
     @Override
     public Tuple read(Tuple template) {
-        while (true) {
-            synchronized (MUTEX) {
-                for (Tuple t : this.tuples) {
-                    if (t.matches(template)) {
-                        return t;
-                    }
-                }
-            }
+        InternalCallback cb = new InternalCallback();
+        this.eventRegister(eventMode.READ, eventTiming.IMMEDIATE, template, cb);
+        try {
+            cb.semaphore.acquire();
+        } catch (InterruptedException e) {
         }
+        return cb.tuple;
     }
 
     @Override
