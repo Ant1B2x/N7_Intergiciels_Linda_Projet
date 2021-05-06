@@ -8,9 +8,8 @@ import java.util.Collection;
 public class TestTakeAll {
 
     public static void main(String[] a) {
-
-        final Linda linda = new linda.shm.CentralizedLinda();
-        // final Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
+        //final Linda linda = new linda.shm.CentralizedLinda();
+        final Linda linda = new linda.server.LindaClient("localhost:4000");
 
         new Thread() {
             public void run() {

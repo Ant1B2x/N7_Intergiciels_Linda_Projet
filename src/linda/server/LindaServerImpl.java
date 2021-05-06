@@ -49,7 +49,7 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
-        return this.readAll(template);
+        return this.linda.readAll(template);
     }
 
     @Override

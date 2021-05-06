@@ -23,7 +23,7 @@ public class LindaClient implements Linda {
     public LindaClient(String serverURI) {
         //  Connexion au serveur de noms (obtention d'un handle)
         try {
-            this.lindaServer = (LindaServerImpl) Naming.lookup("rmi://"+serverURI+"/LindaServer");
+            this.lindaServer = (LindaServer) Naming.lookup("rmi://"+serverURI+"/LindaServer");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -40,37 +40,71 @@ public class LindaClient implements Linda {
 
     @Override
     public Tuple take(Tuple template) {
+        try {
+            return this.lindaServer.take(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Tuple read(Tuple template) {
+        try {
+            return this.lindaServer.read(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Tuple tryTake(Tuple template) {
+        try {
+            return this.lindaServer.tryTake(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Tuple tryRead(Tuple template) {
+        try {
+            return this.lindaServer.tryRead(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
+        try {
+            return this.lindaServer.takeAll(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
+        try {
+            return this.lindaServer.readAll(template);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
-
+        try {
+            this.lindaServer.eventRegister(mode, timing, template, callback);
+        } catch (RemoteException e) {
+        e.printStackTrace();
+        }
     }
 
     @Override

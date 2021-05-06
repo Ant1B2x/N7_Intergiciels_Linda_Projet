@@ -23,8 +23,8 @@ public class BasicTestCallback {
     }
 
     public static void main(String[] a) {
-        linda = new linda.shm.CentralizedLinda();
-        // linda = new linda.server.LindaClient("//localhost:4000/MonServeur");
+        //final Linda linda = new linda.shm.CentralizedLinda();
+        final Linda linda = new linda.server.LindaClient("localhost:4000");
 
         cbmotif = new Tuple(Integer.class, String.class);
         linda.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, cbmotif, new MyCallback());

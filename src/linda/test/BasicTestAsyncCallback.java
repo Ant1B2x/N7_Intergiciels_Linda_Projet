@@ -18,8 +18,8 @@ public class BasicTestAsyncCallback {
     }
 
     public static void main(String[] a) {
-        Linda linda = new linda.shm.CentralizedLinda();
-        // Linda linda = new linda.server.LindaClient("//localhost:4000/MonServeur");
+        //final Linda linda = new linda.shm.CentralizedLinda();
+        final Linda linda = new linda.server.LindaClient("localhost:4000");
 
         Tuple motif = new Tuple(Integer.class, String.class);
         linda.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, motif, new AsynchronousCallback(new MyCallback()));
