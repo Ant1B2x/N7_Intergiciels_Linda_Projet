@@ -203,7 +203,17 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public void debug(String prefix) {
+        System.out.println("####### START DEBUG #######");
 
+        System.out.println(prefix);
+        System.out.println("TUPLES SPACE ("+this.tuples.size()+") #######");
+        for (Tuple t : this.tuples) {
+            System.out.println(t);
+        }
+
+        System.out.println("CALLBACKS (" + this.callbacks.size()+") #######");
+
+        System.out.println("####### END DEBUG #######");
     }
 
 }
