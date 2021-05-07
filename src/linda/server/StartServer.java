@@ -24,6 +24,7 @@ public class StartServer {
         Naming.rebind("rmi://" + SERVER_HOST + ":" + SERVER_PORT + "/LindaServer", linda);
 
         // Service prêt : attente d'appels
-        System.out.println ("The system is ready on port " + SERVER_PORT + ".");
+        System.out.println ("The system is ready on port: " + SERVER_PORT + ".");
     }
+
 }

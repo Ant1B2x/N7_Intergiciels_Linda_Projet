@@ -4,9 +4,7 @@ import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
 
-import java.net.MalformedURLException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
@@ -23,7 +21,8 @@ public class LindaClient implements Linda {
     public LindaClient(String serverURI) {
         //  Connexion au serveur de noms (obtention d'un handle)
         try {
-            this.lindaServer = (LindaServer) Naming.lookup("rmi://"+serverURI+"/LindaServer");
+            System.out.println("Client called with URI: " + serverURI);
+            this.lindaServer = (LindaServer) Naming.lookup(serverURI);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -100,17 +99,27 @@ public class LindaClient implements Linda {
 
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
-        try {
-            final RemoteCallback remoteCallback = new RemoteCallbackImpl(callback);
-            this.lindaServer.eventRegister(mode, timing, template, remoteCallback);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        // Création d'un thread pour ne pas bloquer le client
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Tuple tuple = LindaClient.this.lindaServer.waitEvent(mode, timing, template);
+                    callback.call(tuple);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override
     public void debug(String prefix) {
-
+        try {
+            this.lindaServer.debug(prefix);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -12,24 +12,6 @@ import java.util.concurrent.Semaphore;
  */
 public class CentralizedLinda implements Linda {
 
-    /**
-     * Callback used for read and take
-     */
-    private class InternalCallback implements Callback {
-        private Tuple tuple;
-        private Semaphore semaphore;
-
-        public InternalCallback() {
-            this.semaphore = new Semaphore(0);
-        }
-
-        @Override
-        public void call(Tuple t) {
-            this.tuple = t;
-            this.semaphore.release();
-        }
-    }
-
     private class CallbackTriplet {
         private final eventMode mode;
         private final Tuple template;
@@ -98,33 +80,27 @@ public class CentralizedLinda implements Linda {
     @Override
     public Tuple take(Tuple template) {
         // Créer un callback et l'enregister
-        InternalCallback cb = new InternalCallback();
-        this.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, template, cb);
+        LockedCallback lc = new LockedCallback();
+        this.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, template, lc);
 
         // Attendre que le callback ait été appelé
-        try {
-            cb.semaphore.acquire();
-        } catch (InterruptedException e) {
-        }
+        lc.await();
 
         // Retourner le tuple pris
-        return cb.tuple;
+        return lc.getTuple();
     }
 
     @Override
     public Tuple read(Tuple template) {
         // Créer un callback et l'enregister
-        InternalCallback cb = new InternalCallback();
-        this.eventRegister(eventMode.READ, eventTiming.IMMEDIATE, template, cb);
+        LockedCallback lc = new LockedCallback();
+        this.eventRegister(eventMode.READ, eventTiming.IMMEDIATE, template, lc);
 
         // Attendre que le callback ait été appelé
-        try {
-            cb.semaphore.acquire();
-        } catch (InterruptedException e) {
-        }
+        lc.await();
 
         // Retourner le tuple lu
-        return cb.tuple;
+        return lc.getTuple();
     }
 
     @Override
@@ -203,17 +179,15 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public void debug(String prefix) {
-        System.out.println("####### START DEBUG #######");
+        /*System.out.println("####### START DEBUG #######");
 
         System.out.println(prefix);
-        System.out.println("TUPLES SPACE ("+this.tuples.size()+") #######");
+        System.out.println("TUPLES SPACE ("+this.tuples.size()+")");
         for (Tuple t : this.tuples) {
             System.out.println(t);
         }
 
-        System.out.println("CALLBACKS (" + this.callbacks.size()+") #######");
-
-        System.out.println("####### END DEBUG #######");
+        System.out.println("####### END DEBUG #######");*/
     }
 
 }

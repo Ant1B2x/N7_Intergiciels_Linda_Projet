@@ -1,8 +1,10 @@
 package linda.server;
 
+import linda.AsynchronousCallback;
 import linda.Linda;
 import linda.Tuple;
 import linda.shm.CentralizedLinda;
+import linda.shm.LockedCallback;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -11,7 +13,6 @@ import java.util.Collection;
 public class LindaServerImpl extends UnicastRemoteObject implements LindaServer {
 
     private CentralizedLinda linda;
-    private Collection<RemoteCallback> callbacks;
 
     public LindaServerImpl() throws RemoteException {
         this.linda = new CentralizedLinda();
@@ -53,9 +54,16 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
     }
 
     @Override
-    public void eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) {
-        //final Callback callbackWrapper = new CallbackWrapper(remoteCallback);
-        this.linda.eventRegister(mode, timing, template, new CallbackWrapper(remoteCallback));
+    public Tuple waitEvent(Linda.eventMode mode, Linda.eventTiming timing, Tuple template) throws RemoteException {
+        LockedCallback lc = new LockedCallback();
+        this.linda.eventRegister(mode, timing, template, new AsynchronousCallback(lc));
+        lc.await();
+        return lc.getTuple();
+    }
+
+    @Override
+    public void debug(String prefix) throws RemoteException {
+        this.linda.debug(prefix);
     }
 
 }
