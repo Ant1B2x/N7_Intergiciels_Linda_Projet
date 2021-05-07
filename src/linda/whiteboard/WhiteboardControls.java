@@ -15,31 +15,21 @@ import java.awt.*;
  */
 public class WhiteboardControls extends Panel implements ItemListener {
 
-    private WhiteboardView view;
-    private WhiteboardModel model;
+    private WhiteboardPanel target;
     private static String ERASEALL_LABEL = "Erase All";
     private static String EXIT_LABEL = "Exit";
-    private static String ROTATE_LABEL = "Rotate";
-    private static String EXCLUSIVE_LABEL = "Exclusive Access";
-    private static String PENDING_LABEL = "Pending...";
-    private static String RELEASE_LABEL = "Release Exclusive";
-
-    private Button eraseAllButton;
-    private Button rotateButton;
-    private Button exitButton;
     
-    private Button exclusiveButton;
-    private ExclusiveButtonAction exclusiveButtonAction;
+    private Button eraseAllButton = null;
+    private Button exitButton = null;
     
     /**
      ** The constructor.
      **
      ** @param target - the whiteboard panel
      */
-    public WhiteboardControls(WhiteboardView view, WhiteboardModel model) {
+    public WhiteboardControls(Panel _target) {
         
-        this.view = view;
-        this.model = model;
+        this.target = (WhiteboardPanel)_target;
         Panel pLine1 = new Panel();
         Panel pLine2 = new Panel();
         setLayout(new GridLayout(2,1));
@@ -50,29 +40,28 @@ public class WhiteboardControls extends Panel implements ItemListener {
         
         eraseAllButton = new Button();
         eraseAllButton.setLabel(ERASEALL_LABEL);
-        eraseAllButton.addActionListener((e) -> { model.eraseAll(); });
+        eraseAllButton.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        target.eraseAll();
+                    }
+                });
         pLine1.add(eraseAllButton);
-        
-        rotateButton = new Button();
-        rotateButton.setLabel(ROTATE_LABEL);
-        rotateButton.addActionListener((e) -> { model.rotateAll(90); });
-        pLine1.add(rotateButton);
-
-        exclusiveButton = new Button();
-        exclusiveButton.setLabel(EXCLUSIVE_LABEL);
-        exclusiveButtonAction = new ExclusiveButtonAction(exclusiveButton, model);
-        exclusiveButton.addActionListener(exclusiveButtonAction);
-        pLine1.add(exclusiveButton);
         
         exitButton = new Button();
         exitButton.setLabel(EXIT_LABEL);
-        exitButton.addActionListener((e) -> { model.terminate(); });
+        exitButton.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        target.exitcmd();
+                    }
+                });
         pLine1.add(exitButton);
 
         pLine1.setBackground(Color.lightGray);
         pLine2.setBackground(Color.lightGray);
                 
-        view.drawing.setForeground(Color.red);
+        target.setForeground(Color.red);
         CheckboxGroup group = new CheckboxGroup();
         Checkbox b;
         pLine2.add(b = new Checkbox(null, group, false));
@@ -93,7 +82,7 @@ public class WhiteboardControls extends Panel implements ItemListener {
         pLine2.add(b = new Checkbox(null, group, true));
         b.addItemListener(this);
         b.setBackground(Color.black);
-        view.drawing.setForeground(b.getForeground());
+        target.setForeground(b.getForeground());
         
         Choice shapes = new Choice();
         shapes.addItemListener(this);
@@ -121,43 +110,16 @@ public class WhiteboardControls extends Panel implements ItemListener {
      */
     public void itemStateChanged(ItemEvent e) {
         if (e.getSource() instanceof Checkbox) {
-            view.drawing.setForeground(((Component)e.getSource()).getBackground());
+            target.setForeground(((Component)e.getSource()).getBackground());
         } else if (e.getSource() instanceof Choice) {
             String choice = (String) e.getItem();
             if (choice.equals("Lines")) {
-                view.setDrawMode(WhiteboardView.DrawMode.LINES);
+                target.setDrawMode(WhiteboardPanel.LINES);
             } else if (choice.equals("Points")) {
-                view.setDrawMode(WhiteboardView.DrawMode.POINTS);
+                target.setDrawMode(WhiteboardPanel.POINTS);
             } 
         }
     }
 
-    /**
-     ** Handling of button AcquireExclusive/Pending/ReleaseExclusive.
-     */
-    private class ExclusiveButtonAction implements ActionListener {
-
-        protected boolean hasExclusive = false;
-        private Button button;
-        private WhiteboardModel target;
-
-        public ExclusiveButtonAction(Button b, WhiteboardModel t) {
-            button = b;
-            target = t;
-        }
-
-       public void actionPerformed(ActionEvent e) {
-            if (! hasExclusive) {
-                target.acquireExclusiveAccess();
-                exclusiveButtonAction.hasExclusive = true;
-                exclusiveButton.setLabel(RELEASE_LABEL);
-            } else {
-                target.releaseExclusiveAccess();
-                exclusiveButton.setLabel(EXCLUSIVE_LABEL);
-                hasExclusive = false;
-            }
-        }
-    }
-
-}
+} // WhiteboardControls
 

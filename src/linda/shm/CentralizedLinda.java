@@ -5,6 +5,7 @@ import linda.Linda;
 import linda.Tuple;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -12,68 +13,53 @@ import java.util.concurrent.Semaphore;
  */
 public class CentralizedLinda implements Linda {
 
-    private class CallbackTriplet {
-        private final eventMode mode;
+    private class Event {
         private final Tuple template;
         private final Callback callback;
 
-        public CallbackTriplet(eventMode mode, Tuple template, Callback callback) {
-            this.mode = mode;
+        public Event(Tuple template, Callback callback) {
             this.template = template;
             this.callback = callback;
         }
 
-        public eventMode getMode() {
-            return this.mode;
+        public boolean isMatching(Tuple tuple) {
+            return tuple.matches(this.template);
         }
 
-        public Tuple getTemplate() {
-            return this.template;
-        }
-
-        public Callback getCallback() {
-            return this.callback;
+        public void call(Tuple t) {
+            this.callback.call(t);
         }
     }
 
-    private static final Object MUTEX = new Object();
-
     private Collection<Tuple> tuples;
-    private Collection<CallbackTriplet> callbacks;
+    private Collection<Event> readEvents;
+    private Collection<Event> takeEvents;
 
     public CentralizedLinda() {
-        this.tuples = new LinkedList<>();
-        this.callbacks = new LinkedList<>();
+        this.tuples = new CopyOnWriteArrayList<>();
+        this.readEvents = new CopyOnWriteArrayList<>();
+        this.takeEvents = new CopyOnWriteArrayList<>();
     }
 
     @Override
     public void write(Tuple t) {
-        synchronized (MUTEX) {
-            // Liste des callbacks appelés (à supprimer)
-            Collection<CallbackTriplet> calledCallbacks = new LinkedList<>();
-
-            // Ajouter le tuple à l'espace de tuple
-            this.tuples.add(t);
-
-            // Chercher un callback qui avait demandé un tel tuple
-            for (CallbackTriplet ct : this.callbacks) {
-                if (t.matches(ct.getTemplate())) {
-                    // Ajouter le callback à la liste des callbacks appelés
-                    calledCallbacks.add(ct);
-
-                    // Transmettre le tuple au callback
-                    ct.getCallback().call(t);
-
-                    // Si on est en mode take, on ne veut pas garder le tuple dans l'espace partagé
-                    if (ct.getMode() == eventMode.TAKE) {
-                        this.tuples.remove(t);
-                        break;
-                    }
-                }
+        for (Event readEvent : this.readEvents) {
+            if (readEvent.isMatching(t)) {
+                readEvent.call(t);
+                this.readEvents.remove(readEvent);
             }
+        }
 
-            // Supprimer les callbacks appelés de la liste des callbacks courants
-            calledCallbacks.forEach(ct -> this.callbacks.remove(ct));
+        for (Event takeEvent : this.takeEvents) {
+            if (takeEvent.isMatching(t)) {
+                takeEvent.call(t);
+                this.takeEvents.remove(takeEvent);
+                return;
+            }
+        }
+
+        synchronized (this.tuples) {
+            this.tuples.add(t);
         }
     }
 
@@ -105,7 +91,7 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple tryTake(Tuple template) {
-        synchronized (MUTEX) {
+        synchronized (this.tuples) {
             for (Tuple t : this.tuples) {
                 if (t.matches(template)) {
                     this.tuples.remove(t);
@@ -118,11 +104,9 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple tryRead(Tuple template) {
-        synchronized (MUTEX) {
-            for (Tuple t : this.tuples) {
-                if (t.matches(template)) {
-                    return t;
-                }
+        for (Tuple t : this.tuples) {
+            if (t.matches(template)) {
+                return t;
             }
         }
         return null;
@@ -130,49 +114,42 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
-        Collection<Tuple> result = new LinkedList<>();
-        synchronized (MUTEX) {
-            for (Tuple t : this.tuples) {
-                if (t.matches(template)) {
-                    result.add(t);
-                }
-            }
-            result.forEach(t -> this.tuples.remove(t));
+        Tuple tuple;
+        Collection<Tuple> result = new ArrayList<>();
+        while ((tuple = tryTake(template)) != null) {
+            result.add(tuple);
         }
         return result;
     }
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
-        Collection<Tuple> result = new LinkedList<>();
-        synchronized (MUTEX) {
-            for (Tuple t : this.tuples) {
-                if (t.matches(template)) {
-                    result.add(t);
-                }
-            }
+        Tuple tuple;
+        Collection<Tuple> result = new ArrayList<>();
+        while ((tuple = tryRead(template)) != null) {
+            result.add(tuple);
         }
         return result;
     }
 
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
-        Tuple t = null;
-
+        Tuple tuple = null;
         if (timing == eventTiming.IMMEDIATE) {
             if (mode == eventMode.READ) {
-                t = this.tryRead(template);
+                tuple = this.tryRead(template);
             } else if (mode == eventMode.TAKE) {
-                t = this.tryTake(template);
+                tuple = this.tryTake(template);
             }
         }
 
-        if (t != null) {
-            callback.call(t);
-        }
-        else {
-            synchronized (MUTEX) {
-                this.callbacks.add(new CallbackTriplet(mode, template, callback));
+        if (tuple != null) {
+            callback.call(tuple);
+        } else {
+            if (mode == eventMode.READ) {
+                this.readEvents.add(new Event(template, callback));
+            } else if (mode == eventMode.TAKE) {
+                this.takeEvents.add(new Event(template, callback));
             }
         }
     }
