@@ -167,4 +167,13 @@ public class CentralizedLinda implements Linda {
         System.out.println("####### END DEBUG #######");*/
     }
 
+    // TODO: voir si c'est ok avec le prof
+    public Collection<Tuple> getAllTuples() {
+        Collection<Tuple> tuplesClone = new ArrayList<>();
+        for (Tuple tuple : this.tuples) {
+            tuplesClone.add(tuple.deepclone());
+        }
+        return tuplesClone;
+    }
+
 }

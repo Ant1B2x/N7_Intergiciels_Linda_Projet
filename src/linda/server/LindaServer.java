@@ -28,4 +28,8 @@ public interface LindaServer extends Remote {
 
     void debug(String prefix) throws RemoteException;
 
+    void save(String filePath) throws RemoteException;
+
+    void load(String filePath) throws RemoteException;
+
 }
