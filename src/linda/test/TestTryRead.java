@@ -18,7 +18,16 @@ public class TestTryRead {
                 }
                 Tuple motif = new Tuple(Integer.class, String.class);
                 Tuple res = linda.tryRead(motif);
-                System.out.println("(1) Resultat:" + res);
+                System.out.println("(1) Resultat: " + res + " (doit être null)");
+                linda.debug("(1)");
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                res = linda.tryRead(motif);
+                System.out.println("(1) Resultat: " + res);
                 linda.debug("(1)");
             }
         }.start();
