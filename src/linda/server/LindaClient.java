@@ -114,6 +114,24 @@ public class LindaClient implements Linda {
     }
 
     @Override
+    public void save(String filePath) {
+        try {
+            this.lindaServer.save(filePath);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void load(String filePath) {
+        try {
+            this.lindaServer.load(filePath);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void debug(String prefix) {
         try {
             this.lindaServer.debug(prefix);

@@ -3,7 +3,9 @@ package linda.shm;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
+import linda.TupleFormatException;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
@@ -151,6 +153,41 @@ public class CentralizedLinda implements Linda {
             } else if (mode == eventMode.TAKE) {
                 this.takeEvents.add(new Event(template, callback));
             }
+        }
+    }
+
+    @Override
+    public void save(String filePath) {
+        try {
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath));
+            synchronized (this.tuples) {
+                for (Tuple tuple : this.tuples) {
+                    fileWriter.write(tuple.toString() + '\n');
+                }
+            }
+            fileWriter.close();
+        } catch (IOException e) {
+            System.err.println("Fatal IO error with " + filePath);
+        }
+    }
+
+    @Override
+    public void load(String filePath) {
+        try {
+            BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
+            synchronized (this.tuples) {
+                String line;
+                while ((line = fileReader.readLine()) != null) {
+                    try {
+                        this.write(Tuple.valueOf(line));
+                    } catch (TupleFormatException e) {
+                        System.err.println("Invalid tuple: " + line);
+                    }
+                }
+            }
+            fileReader.close();
+        } catch (IOException e) {
+            System.err.println("Fatal IO error with " + filePath);
         }
     }
 

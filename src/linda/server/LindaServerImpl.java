@@ -3,16 +3,18 @@ package linda.server;
 import linda.AsynchronousCallback;
 import linda.Linda;
 import linda.Tuple;
+import linda.TupleFormatException;
 import linda.shm.CentralizedLinda;
 import linda.shm.LockedCallback;
 
+import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
 public class LindaServerImpl extends UnicastRemoteObject implements LindaServer {
 
-    private CentralizedLinda linda;
+    private Linda linda;
 
     public LindaServerImpl() throws RemoteException {
         this.linda = new CentralizedLinda();
@@ -54,7 +56,7 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
     }
 
     @Override
-    public Tuple waitEvent(Linda.eventMode mode, Linda.eventTiming timing, Tuple template) throws RemoteException {
+    public Tuple waitEvent(Linda.eventMode mode, Linda.eventTiming timing, Tuple template) {
         LockedCallback lc = new LockedCallback();
         this.linda.eventRegister(mode, timing, template, new AsynchronousCallback(lc));
         lc.await();
@@ -62,8 +64,18 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
     }
 
     @Override
-    public void debug(String prefix) throws RemoteException {
+    public void debug(String prefix) {
         this.linda.debug(prefix);
+    }
+
+    @Override
+    public void save(String filePath) {
+        this.linda.save(filePath); // Obliger de caster ici, c'est moche
+    }
+
+    @Override
+    public void load(String filePath) {
+        this.linda.load(filePath); // Obliger de caster ici, c'est moche
     }
 
 }

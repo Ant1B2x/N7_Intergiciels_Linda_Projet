@@ -1,6 +1,9 @@
 package linda.server;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
 /** Création d'un serveur de nom intégré et d'un objet accessible à distance.
@@ -18,10 +21,52 @@ public class StartServer {
             System.out.println("A registry is already running, proceeding...");
         }
 
-        // Création de l'objet Carnet,
-        // et enregistrement du carnet dans le serveur de nom
-        LindaServer linda = new LindaServerImpl();
-        Naming.rebind("rmi://" + SERVER_HOST + ":" + SERVER_PORT + "/LindaServer", linda);
+        // Créer le serveur linda
+        LindaServer lindaServer = new LindaServerImpl();
+
+        if (args.length > 1) {
+            System.err.println("Usage: java StartServer [filepath]");
+            System.exit(1);
+        }
+
+        // Gérer l'argument en ligne de commande
+        final String filePath;
+        if (args.length == 1) {
+            filePath = args[0];
+        } else {
+            filePath = null;
+        }
+
+        // Charger les tuples du fichier
+        if (filePath != null && Files.exists(Paths.get(filePath))) {
+            System.out.println("Loading tuples from " + filePath + "...");
+            try {
+                lindaServer.load(filePath);
+            } catch (RemoteException e) {
+            }
+            System.out.println("Tuples loaded.");
+        }
+
+        // Enregistrement de linda dans le serveur de nom
+        Naming.rebind("rmi://" + SERVER_HOST + ":" + SERVER_PORT + "/LindaServer", lindaServer);
+
+        // Intercepter CTRL+C pour sauvegarder les tuples dans le fichier
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                System.out.println("Shutdown requested, proceeding...");
+
+                if (filePath != null) {
+                    System.out.println("Saving tuples to " + filePath + "...");
+                    try {
+                        lindaServer.save(filePath);
+                    } catch (RemoteException e) {
+                    }
+                    System.out.println("Tuples saved.");
+                }
+
+                Runtime.getRuntime().halt(0);
+            }
+        });
 
         // Service prêt : attente d'appels
         System.out.println ("The system is ready on port: " + SERVER_PORT + ".");

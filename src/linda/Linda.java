@@ -58,6 +58,10 @@ public interface Linda {
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback);
 
+    public void save(String filePath);
+
+    public void load(String filePath);
+
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
     public void debug(String prefix);
 
