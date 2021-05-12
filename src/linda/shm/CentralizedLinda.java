@@ -160,8 +160,10 @@ public class CentralizedLinda implements Linda {
     public void save(String filePath) {
         try {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath));
-            for (Tuple tuple : this.tuples) {
-                fileWriter.write(tuple.toString() + '\n');
+            synchronized (this.tuples) {
+                for (Tuple tuple : this.tuples) {
+                    fileWriter.write(tuple.toString() + '\n');
+                }
             }
             fileWriter.close();
         } catch (IOException e) {
@@ -173,12 +175,14 @@ public class CentralizedLinda implements Linda {
     public void load(String filePath) {
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = fileReader.readLine()) != null) {
-                try {
-                    this.write(Tuple.valueOf(line));
-                } catch (TupleFormatException e) {
-                    System.err.println("Invalid tuple: " + line);
+            synchronized (this.tuples) {
+                String line;
+                while ((line = fileReader.readLine()) != null) {
+                    try {
+                        this.write(Tuple.valueOf(line));
+                    } catch (TupleFormatException e) {
+                        System.err.println("Invalid tuple: " + line);
+                    }
                 }
             }
             fileReader.close();
