@@ -70,31 +70,12 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public void save(String filePath) {
-        try {
-            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath));
-            for (Tuple tuple : ((CentralizedLinda) this.linda).getAllTuples()) {
-                fileWriter.write(tuple.toString() + '\n');
-            }
-            fileWriter.close();
-        } catch (IOException e) {
-            System.err.println(e);
-        }
+        this.linda.save(filePath); // Obliger de caster ici, c'est moche
     }
 
     @Override
     public void load(String filePath) {
-        try {
-            BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = fileReader.readLine()) != null) {
-                this.linda.write(Tuple.valueOf(line));
-            }
-            fileReader.close();
-        } catch (IOException e) {
-            System.err.println(e);
-        } catch (TupleFormatException e) {
-            System.err.println(e);
-        }
+        this.linda.load(filePath); // Obliger de caster ici, c'est moche
     }
 
 }
