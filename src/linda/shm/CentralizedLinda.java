@@ -60,9 +60,7 @@ public class CentralizedLinda implements Linda {
             }
         }
 
-        synchronized (this.tuples) {
-            this.tuples.add(t);
-        }
+        this.tuples.add(t);
     }
 
     @Override
@@ -93,12 +91,10 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Tuple tryTake(Tuple template) {
-        synchronized (this.tuples) {
-            for (Tuple t : this.tuples) {
-                if (t.matches(template)) {
-                    this.tuples.remove(t);
-                    return t;
-                }
+        for (Tuple t : this.tuples) {
+            if (t.matches(template)) {
+                this.tuples.remove(t);
+                return t;
             }
         }
         return null;
@@ -116,8 +112,8 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> takeAll(Tuple template) {
-        Tuple tuple;
         Collection<Tuple> result = new ArrayList<>();
+        Tuple tuple;
         while ((tuple = tryTake(template)) != null) {
             result.add(tuple);
         }
@@ -126,10 +122,11 @@ public class CentralizedLinda implements Linda {
 
     @Override
     public Collection<Tuple> readAll(Tuple template) {
-        Tuple tuple;
         Collection<Tuple> result = new ArrayList<>();
-        while ((tuple = tryRead(template)) != null) {
-            result.add(tuple);
+        for (Tuple tuple : this.tuples) {
+            if (tuple.matches(template)) {
+                result.add(tuple);
+            }
         }
         return result;
     }
@@ -160,10 +157,8 @@ public class CentralizedLinda implements Linda {
     public void save(String filePath) {
         try {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath));
-            synchronized (this.tuples) {
-                for (Tuple tuple : this.tuples) {
-                    fileWriter.write(tuple.toString() + '\n');
-                }
+            for (Tuple tuple : this.tuples) {
+                fileWriter.write(tuple.toString() + '\n');
             }
             fileWriter.close();
         } catch (IOException e) {
@@ -175,14 +170,12 @@ public class CentralizedLinda implements Linda {
     public void load(String filePath) {
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-            synchronized (this.tuples) {
-                String line;
-                while ((line = fileReader.readLine()) != null) {
-                    try {
-                        this.write(Tuple.valueOf(line));
-                    } catch (TupleFormatException e) {
-                        System.err.println("Invalid tuple: " + line);
-                    }
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+                try {
+                    this.write(Tuple.valueOf(line));
+                } catch (TupleFormatException e) {
+                    System.err.println("Invalid tuple: " + line);
                 }
             }
             fileReader.close();

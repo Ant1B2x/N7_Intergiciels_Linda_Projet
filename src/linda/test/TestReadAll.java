@@ -59,11 +59,11 @@ public class TestReadAll {
                 System.out.println("(2) write: " + t11);
                 linda.write(t11);
 
-                Tuple t2 = new Tuple(3, "peut être");
+                Tuple t2 = new Tuple(3, "peut_être");
                 System.out.println("(2) write: " + t2);
                 linda.write(t2);
 
-                Tuple t3 = new Tuple(4, "pourquoi pas");
+                Tuple t3 = new Tuple(4, "pourquoi_pas");
                 System.out.println("(2) write: " + t3);
                 linda.write(t3);
 
