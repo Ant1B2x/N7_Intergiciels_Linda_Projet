@@ -70,12 +70,12 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public void save(String filePath) {
-        this.linda.save(filePath); // Obliger de caster ici, c'est moche
+        this.linda.save(filePath);
     }
 
     @Override
     public void load(String filePath) {
-        this.linda.load(filePath); // Obliger de caster ici, c'est moche
+        this.linda.load(filePath);
     }
 
 }

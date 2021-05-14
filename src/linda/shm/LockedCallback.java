@@ -28,7 +28,6 @@ public class LockedCallback implements Callback {
         try {
             this.semaphore.acquire();
         } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
