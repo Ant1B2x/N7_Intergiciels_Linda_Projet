@@ -156,10 +156,10 @@ public class CentralizedLinda implements Linda {
     @Override
     public void save(String filePath) {
         try {
-            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath));
-            for (Tuple tuple : this.tuples) {
-                fileWriter.write(tuple.toString() + '\n');
-            }
+            FileOutputStream fileWriter = new FileOutputStream(filePath);
+            ObjectOutputStream objectWriter = new ObjectOutputStream(fileWriter);
+            objectWriter.writeObject(this.tuples);
+            objectWriter.close();
             fileWriter.close();
         } catch (IOException e) {
             System.err.println("Fatal IO error with " + filePath);
@@ -169,17 +169,11 @@ public class CentralizedLinda implements Linda {
     @Override
     public void load(String filePath) {
         try {
-            BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = fileReader.readLine()) != null) {
-                try {
-                    this.write(Tuple.valueOf(line));
-                } catch (TupleFormatException e) {
-                    System.err.println("Invalid tuple: " + line);
-                }
-            }
+            FileInputStream fileReader = new FileInputStream(filePath);
+            ObjectInputStream objectReader = new ObjectInputStream(fileReader);
+            this.tuples = (CopyOnWriteArrayList<Tuple>) objectReader.readObject();
             fileReader.close();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             System.err.println("Fatal IO error with " + filePath);
         }
     }
