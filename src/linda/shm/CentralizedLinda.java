@@ -3,12 +3,10 @@ package linda.shm;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
-import linda.TupleFormatException;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Semaphore;
 
 /**
  * Shared memory implementation of Linda.

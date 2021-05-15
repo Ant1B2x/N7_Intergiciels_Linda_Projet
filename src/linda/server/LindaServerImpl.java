@@ -3,11 +3,9 @@ package linda.server;
 import linda.AsynchronousCallback;
 import linda.Linda;
 import linda.Tuple;
-import linda.TupleFormatException;
 import linda.shm.CentralizedLinda;
 import linda.shm.LockedCallback;
 
-import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;

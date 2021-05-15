@@ -1,6 +1,5 @@
 package linda.server;
 
-import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
 
