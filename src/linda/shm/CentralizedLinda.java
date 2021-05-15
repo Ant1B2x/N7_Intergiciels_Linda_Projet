@@ -172,6 +172,7 @@ public class CentralizedLinda implements Linda {
             FileInputStream fileReader = new FileInputStream(filePath);
             ObjectInputStream objectReader = new ObjectInputStream(fileReader);
             this.tuples = (CopyOnWriteArrayList<Tuple>) objectReader.readObject();
+            objectReader.close();
             fileReader.close();
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Fatal IO error with " + filePath);
