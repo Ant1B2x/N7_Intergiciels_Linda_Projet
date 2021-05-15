@@ -9,7 +9,11 @@ import java.util.Collection;
 
 public interface LindaServer extends Remote {
 
+    void declareServer() throws RemoteException;
+
     void write(Tuple t) throws RemoteException;
+
+    void writeBackup(Tuple t) throws RemoteException;
 
     Tuple take(Tuple template) throws RemoteException;
 
@@ -23,12 +27,20 @@ public interface LindaServer extends Remote {
 
     Collection<Tuple> readAll(Tuple template) throws RemoteException;
 
-    Tuple waitEvent(Linda.eventMode mode, Linda.eventTiming timing, Tuple template) throws RemoteException;
-
-    void debug(String prefix) throws RemoteException;
+    Tuple eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) throws RemoteException;
 
     void save(String filePath) throws RemoteException;
 
     void load(String filePath) throws RemoteException;
+
+    void registerBackup(LindaServer backup) throws RemoteException;
+
+    void unregisterBackup() throws RemoteException;
+
+    void ping() throws RemoteException;
+
+    void pong() throws RemoteException;
+
+    void debug(String prefix) throws RemoteException;
 
 }

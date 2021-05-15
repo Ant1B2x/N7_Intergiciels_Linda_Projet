@@ -61,6 +61,23 @@ public class CentralizedLinda implements Linda {
         this.tuples.add(t);
     }
 
+    public void writeWithoutCalling(Tuple t) {
+        for (Event readEvent : this.readEvents) {
+            if (readEvent.isMatching(t)) {
+                this.readEvents.remove(readEvent);
+            }
+        }
+
+        for (Event takeEvent : this.takeEvents) {
+            if (takeEvent.isMatching(t)) {
+                this.takeEvents.remove(takeEvent);
+                return;
+            }
+        }
+
+        this.tuples.add(t);
+    }
+
     @Override
     public Tuple take(Tuple template) {
         // Créer un callback et l'enregister

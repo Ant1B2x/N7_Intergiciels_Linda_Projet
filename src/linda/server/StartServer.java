@@ -2,7 +2,6 @@ package linda.server;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
@@ -23,6 +22,7 @@ public class StartServer {
 
         // Créer le serveur linda
         LindaServer lindaServer = new LindaServerImpl();
+        lindaServer.declareServer();
 
         if (args.length > 1) {
             System.err.println("Usage: java StartServer [filepath]");
@@ -47,9 +47,6 @@ public class StartServer {
             System.out.println("Tuples loaded.");
         }
 
-        // Enregistrement de linda dans le serveur de nom
-        Naming.rebind("rmi://" + SERVER_HOST + ":" + SERVER_PORT + "/LindaServer", lindaServer);
-
         // Intercepter CTRL+C pour sauvegarder les tuples dans le fichier
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -69,7 +66,7 @@ public class StartServer {
         });
 
         // Service prêt : attente d'appels
-        System.out.println ("The system is ready on port: " + SERVER_PORT + ".");
+        System.out.println("The system is ready on port: " + SERVER_PORT + ".");
     }
 
 }

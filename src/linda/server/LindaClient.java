@@ -7,11 +7,14 @@ import linda.Tuple;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.concurrent.Semaphore;
 
 /** Client part of a client/server implementation of Linda.
  * It implements the Linda interface and propagates everything to the server it is connected to.
  * */
 public class LindaClient implements Linda {
+
+    private static final int BACKUP_WAIT = 3000;
 
     private LindaServer lindaServer;
 
@@ -24,7 +27,7 @@ public class LindaClient implements Linda {
             System.out.println("Client called with URI: " + serverURI);
             this.lindaServer = (LindaServer) Naming.lookup(serverURI);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
     }
 
@@ -32,8 +35,13 @@ public class LindaClient implements Linda {
     public void write(Tuple t) {
         try {
             this.lindaServer.write(t);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (RemoteException re) {
+            try {
+                Thread.sleep(BACKUP_WAIT);
+                this.write(t);
+            } catch (InterruptedException e) {
+                System.err.println(e);
+            }
         }
     }
 
