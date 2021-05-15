@@ -27,7 +27,7 @@ public interface LindaServer extends Remote {
 
     Collection<Tuple> readAll(Tuple template) throws RemoteException;
 
-    Tuple eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) throws RemoteException;
+    void eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) throws RemoteException;
 
     void save(String filePath) throws RemoteException;
 

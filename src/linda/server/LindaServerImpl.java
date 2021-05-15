@@ -134,7 +134,7 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
     }
 
     @Override
-    public Tuple eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) {
+    public void eventRegister(Linda.eventMode mode, Linda.eventTiming timing, Tuple template, RemoteCallback remoteCallback) {
         NestedCallback nestedCallback = new NestedCallback(remoteCallback);
         this.linda.eventRegister(mode, timing, template, new AsynchronousCallback(nestedCallback));
         if (!this.isBackup && this.otherServer != null) {
@@ -144,8 +144,6 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
                 this.unregisterBackup();
             }
         }
-
-        return template;
     }
 
     @Override
