@@ -158,7 +158,14 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public void registerBackup(LindaServer backup) {
-        this.otherServer = backup;
+        try {
+            this.otherServer = backup;
+            for (Tuple tuple : ((CentralizedLinda) this.linda).getAllTuples()) {
+                this.otherServer.write(tuple);
+            }
+        } catch (RemoteException e) {
+            System.err.println(e);
+        }
     }
 
     @Override

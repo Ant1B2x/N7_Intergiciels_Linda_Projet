@@ -168,6 +168,14 @@ public class CentralizedLinda implements Linda {
         }
     }
 
+    public Collection<Tuple> getAllTuples() {
+        Collection<Tuple> tuplesClone = new ArrayList<>();
+        for (Tuple tuple : this.tuples) {
+            tuplesClone.add(tuple.deepclone());
+        }
+        return tuplesClone;
+    }
+
     public void save(String filePath) {
         try {
             FileOutputStream fileWriter = new FileOutputStream(filePath);
