@@ -15,7 +15,7 @@ import java.util.Collection;
  * */
 public class LindaClient implements Linda {
 
-    private static final int BACKUP_WAIT = 3000;
+    private static final int BACKUP_WAIT = 1000;
 
     private String serverURI;
     private LindaServer lindaServer;
