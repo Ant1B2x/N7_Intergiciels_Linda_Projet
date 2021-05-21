@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Implémentation en mémoire partagée de Linda.
+ * Shared memory implementation of Linda.
  */
 public class CentralizedLinda implements Linda {
 
