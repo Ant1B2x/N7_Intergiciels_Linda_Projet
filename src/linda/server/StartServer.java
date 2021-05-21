@@ -10,7 +10,13 @@ import java.rmi.registry.LocateRegistry;
  *  Si la création du serveur de nom échoue, on suppose qu'il existe déjà (rmiregistry) et on continue. */
 public class StartServer {
 
+    /**
+     * Hôte de l'URI RMI
+     */
     private static final String SERVER_HOST = "localhost";
+    /**
+     * Port de l'URI RMI
+     */
     private static final int SERVER_PORT = 4000;
 
     public static void main (String args[]) throws Exception {
@@ -24,6 +30,7 @@ public class StartServer {
         // Créer le serveur linda
         LindaServer lindaServer = new LindaServerImpl();
 
+        // Si plus d'un argument, erreur
         if (args.length > 1) {
             System.err.println("Usage: java StartServer [filepath]");
             System.exit(1);
@@ -37,7 +44,7 @@ public class StartServer {
             filePath = null;
         }
 
-        // Charger les tuples du fichier
+        // Charger les tuples du fichier (si le fichier existe)
         if (filePath != null && Files.exists(Paths.get(filePath))) {
             System.out.println("Loading tuples from " + filePath + "...");
             try {
@@ -55,6 +62,7 @@ public class StartServer {
             public void run() {
                 System.out.println("Shutdown requested, proceeding...");
 
+                // Si fichier passé en ligne de commande
                 if (filePath != null) {
                     System.out.println("Saving tuples to " + filePath + "...");
                     try {

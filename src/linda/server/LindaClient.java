@@ -13,6 +13,9 @@ import java.util.Collection;
  * */
 public class LindaClient implements Linda {
 
+    /**
+     * Le linda serveur auquel on est connecté
+     */
     private LindaServer lindaServer;
 
     /** Initializes the Linda implementation.
@@ -102,6 +105,8 @@ public class LindaClient implements Linda {
         // Création d'un thread pour ne pas bloquer le client
         new Thread(() -> {
             try {
+                // Ici, waitEvent fait attendre jusqu'à ce qu'un tuple soit trouvé à l'aide d'un sémaphore
+                // Ça évite d'avoir un callback en remote, du moins pour l'instant :)
                 Tuple tuple = LindaClient.this.lindaServer.waitEvent(mode, timing, template);
                 callback.call(tuple);
             } catch (RemoteException e) {

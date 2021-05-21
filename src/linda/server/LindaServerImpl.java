@@ -12,8 +12,15 @@ import java.util.Collection;
 
 public class LindaServerImpl extends UnicastRemoteObject implements LindaServer {
 
+    /**
+     * L'espace de tuple en mémoire partagé à utiliser
+     */
     private Linda linda;
 
+    /**
+     * Crée un serveur Linda et l'initialise avec un Linda en mémoire partagée
+     * @throws RemoteException si il y a un problème de réseau
+     */
     public LindaServerImpl() throws RemoteException {
         this.linda = new CentralizedLinda();
     }
@@ -55,9 +62,13 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public Tuple waitEvent(Linda.eventMode mode, Linda.eventTiming timing, Tuple template) {
+        // Créer un LockedCallback (Callback implémenté avec un sémaphore)
         LockedCallback lc = new LockedCallback();
+        // Enregistre le callback sur le Linda en mémoire partagée
         this.linda.eventRegister(mode, timing, template, new AsynchronousCallback(lc));
+        // Attend qu'un tuple ait été lu ou pris
         lc.await();
+        // Retourne le tuple lu ou pris
         return lc.getTuple();
     }
 
