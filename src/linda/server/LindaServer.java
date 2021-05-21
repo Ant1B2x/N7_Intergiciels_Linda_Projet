@@ -35,8 +35,6 @@ public interface LindaServer extends Remote {
 
     void registerBackup(LindaServer backup) throws RemoteException;
 
-    void unregisterBackup() throws RemoteException;
-
     void ping() throws RemoteException;
 
     void pong() throws RemoteException;

@@ -40,6 +40,7 @@ public class LindaClient implements Linda {
 
     private void rejoinServer() {
         try {
+            System.out.println("Main server dead, switching...");
             Thread.sleep(BACKUP_WAIT);
             this.joinServer();
         } catch (InterruptedException e) {

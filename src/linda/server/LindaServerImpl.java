@@ -168,9 +168,23 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
         }
     }
 
-    @Override
-    public void unregisterBackup() {
+    private void unregisterBackup() {
         this.otherServer = null;
+    }
+
+    private void becomePrimary() {
+        try {
+            try {
+                LocateRegistry.createRegistry(4000);
+            } catch (java.rmi.server.ExportException e) {
+                System.out.println("A registry is already running, proceeding...");
+            }
+            Naming.rebind("rmi://localhost:4000/LindaServer", this);
+            this.unregisterBackup();
+            this.isBackup = false;
+        } catch (RemoteException | MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -182,20 +196,9 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
                 System.out.println("...Pong!");
                 Thread.sleep(2000);
             } catch (RemoteException re) {
-                try {
-                    try {
-                        LocateRegistry.createRegistry(4000);
-                    } catch (java.rmi.server.ExportException e) {
-                        System.out.println("A registry is already running, proceeding...");
-                    }
-                    Naming.rebind("rmi://localhost:4000/LindaServer", this);
-                    this.unregisterBackup();
-                    this.isBackup = false;
-                } catch (RemoteException | MalformedURLException e) {
-                    e.printStackTrace();
-                }
+                this.becomePrimary();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.err.println(e);
             }
         }
     }
