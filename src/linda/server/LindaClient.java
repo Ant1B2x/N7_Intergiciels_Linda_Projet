@@ -24,7 +24,7 @@ public class LindaClient implements Linda {
             System.out.println("Client called with URI: " + serverURI);
             this.lindaServer = (LindaServer) Naming.lookup(serverURI);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
     }
 
@@ -33,7 +33,7 @@ public class LindaClient implements Linda {
         try {
             this.lindaServer.write(t);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
     }
 
@@ -42,7 +42,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.take(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -52,7 +52,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.read(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -62,7 +62,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.tryTake(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -72,7 +72,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.tryRead(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -82,7 +82,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.takeAll(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -92,7 +92,7 @@ public class LindaClient implements Linda {
         try {
             return this.lindaServer.readAll(template);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
         return null;
     }
@@ -100,35 +100,14 @@ public class LindaClient implements Linda {
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
         // Création d'un thread pour ne pas bloquer le client
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Tuple tuple = LindaClient.this.lindaServer.waitEvent(mode, timing, template);
-                    callback.call(tuple);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                Tuple tuple = LindaClient.this.lindaServer.waitEvent(mode, timing, template);
+                callback.call(tuple);
+            } catch (RemoteException e) {
+                System.err.println(e);
             }
-        }.start();
-    }
-
-    @Override
-    public void save(String filePath) {
-        try {
-            this.lindaServer.save(filePath);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void load(String filePath) {
-        try {
-            this.lindaServer.load(filePath);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     @Override
@@ -136,7 +115,7 @@ public class LindaClient implements Linda {
         try {
             this.lindaServer.debug(prefix);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
     }
 

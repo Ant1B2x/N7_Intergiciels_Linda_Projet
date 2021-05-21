@@ -68,12 +68,12 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
 
     @Override
     public void save(String filePath) {
-        this.linda.save(filePath);
+        ((CentralizedLinda) this.linda).save(filePath);
     }
 
     @Override
     public void load(String filePath) {
-        this.linda.load(filePath);
+        ((CentralizedLinda) this.linda).load(filePath);
     }
 
 }

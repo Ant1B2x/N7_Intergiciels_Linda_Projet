@@ -69,7 +69,7 @@ public class StartServer {
         });
 
         // Service prêt : attente d'appels
-        System.out.println ("The system is ready on port: " + SERVER_PORT + ".");
+        System.out.println("The system is ready on port: " + SERVER_PORT + ".");
     }
 
 }
