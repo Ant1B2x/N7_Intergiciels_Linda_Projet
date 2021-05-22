@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public interface LindaServer extends Remote {
 
-    void declareServer() throws RemoteException;
+    void declareServer(String host, int port) throws RemoteException;
 
     void write(Tuple t) throws RemoteException;
 

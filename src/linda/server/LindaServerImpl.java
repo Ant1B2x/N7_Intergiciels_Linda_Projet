@@ -17,6 +17,8 @@ import java.util.Collection;
 public class LindaServerImpl extends UnicastRemoteObject implements LindaServer {
 
     private Linda linda;
+    private String host;
+    private int port;
     private LindaServer otherServer;
     private boolean isBackup;
 
@@ -25,18 +27,20 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
     }
 
     @Override
-    public void declareServer() throws RemoteException {
+    public void declareServer(String host, int port) throws RemoteException {
+        this.host = host;
+        this.port = port;
         try {
-            Naming.bind("rmi://localhost:4000/LindaServer", this);
+            // Enregistrement de linda dans le serveur de nom
+            Naming.bind("rmi://"+this.host+":"+this.port+"/LindaServer", this);
             this.isBackup = false;
         } catch (AlreadyBoundException abe) {
             try {
-                Naming.bind("rmi://localhost:4000/LindaServerBackup", this);
-                this.otherServer = (LindaServer) Naming.lookup("rmi://localhost:4000/LindaServer");
+                this.otherServer = (LindaServer) Naming.lookup("rmi://"+this.host+":"+this.port+"/LindaServer");
                 this.isBackup = true;
                 this.otherServer.registerBackup(this);
                 new Thread(this::ping).start();
-            } catch (AlreadyBoundException | MalformedURLException | NotBoundException e) {
+            } catch (MalformedURLException | NotBoundException e) {
                 System.err.println(e);
             }
         } catch (MalformedURLException e) {
@@ -179,7 +183,7 @@ public class LindaServerImpl extends UnicastRemoteObject implements LindaServer 
             } catch (java.rmi.server.ExportException e) {
                 System.out.println("A registry is already running, proceeding...");
             }
-            Naming.rebind("rmi://localhost:4000/LindaServer", this);
+            Naming.rebind("rmi://"+this.host+":"+this.port+"/LindaServer", this);
             this.unregisterBackup();
             this.isBackup = false;
         } catch (RemoteException | MalformedURLException e) {
