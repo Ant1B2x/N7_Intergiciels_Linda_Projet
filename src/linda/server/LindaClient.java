@@ -15,9 +15,21 @@ import java.util.Collection;
  * */
 public class LindaClient implements Linda {
 
+    /**
+     * Le temps fixe d'attente avant de tenter de se reconnecter à un serveur
+     * lorsque le serveur auquel on est connecté ne répond plus
+     */
     private static final int BACKUP_WAIT = 1000;
 
+    /**
+     * URI du serveur auquel on est connecté
+     * Exemple : rmi://localhost:4000/LindaServer
+     */
     private String serverURI;
+
+    /**
+     * Le linda serveur auquel on est connecté
+     */
     private LindaServer lindaServer;
 
     /** Initializes the Linda implementation.
@@ -25,10 +37,13 @@ public class LindaClient implements Linda {
      */
     public LindaClient(String serverURI) {
         System.out.println("Client called with URI: " + serverURI);
-        this.serverURI = serverURI;
+        this.serverURI = serverURI; // "sauvegarder" l'URI du serveur
         this.joinServer();
     }
 
+    /**
+     * Se connecter à un LindaServer à l'aide d'une URI
+     */
     private void joinServer() {
         //  Connexion au serveur de noms (obtention d'un handle)
         try {
@@ -38,6 +53,10 @@ public class LindaClient implements Linda {
         }
     }
 
+    /**
+     * Se reconnecter à un LindaServer à l'aide d'une URI
+     * (attend 1s et appelle joinServer())
+     */
     private void rejoinServer() {
         try {
             System.out.println("Main server dead, switching...");
@@ -120,10 +139,11 @@ public class LindaClient implements Linda {
 
     @Override
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
+        // Création d'un thread pour ne pas bloquer le client
         new Thread(() -> {
             try {
-                RemoteCallback remoteCallback = new RemoteCallbackImpl(callback);
-                this.lindaServer.eventRegister(mode, timing, template, remoteCallback);
+                // Crée un remoteCallback encapsulant callback et l'envoie au serveur dans eventRegister()
+                this.lindaServer.eventRegister(mode, timing, template, new RemoteCallbackImpl(callback));
             } catch (RemoteException re) {
                 this.rejoinServer();
                 this.eventRegister(mode, timing, template, callback);
@@ -136,12 +156,8 @@ public class LindaClient implements Linda {
         try {
             this.lindaServer.debug(prefix);
         } catch (RemoteException re) {
-            try {
-                Thread.sleep(BACKUP_WAIT);
-                this.debug(prefix);
-            } catch (InterruptedException e) {
-                System.err.println(e);
-            }
+            this.rejoinServer();
+            this.debug(prefix);
         }
     }
 

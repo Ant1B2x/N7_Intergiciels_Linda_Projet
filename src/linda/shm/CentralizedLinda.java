@@ -106,7 +106,7 @@ public class CentralizedLinda implements Linda {
 
     /**
      * Fait la même chose que write, sans appeler les callback
-     * Utile notamment pour les serveur de backup
+     * Utile notamment pour le serveur de backup
      * Voir doc de write
      */
     public void writeWithoutCalling(Tuple t) {
