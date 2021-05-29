@@ -86,22 +86,22 @@ public class CentralizedLinda implements Linda {
         // Appelle et retirer les callbacks read en priorité
         for (Event readEvent : this.readEvents) {
             if (readEvent.isMatching(t)) {
-                readEvent.call(t);
                 this.readEvents.remove(readEvent);
+                readEvent.call(t.deepclone());
             }
         }
 
         // Appelle et retire au plus un callback take en attente
         for (Event takeEvent : this.takeEvents) {
             if (takeEvent.isMatching(t)) {
-                takeEvent.call(t);
                 this.takeEvents.remove(takeEvent);
+                takeEvent.call(t.deepclone());
                 return; // si un take a été fait, on quitte la fonction, pas d'écriture
             }
         }
 
         // Ajoute le tuple à l'espace partagé (pas de take n'a été fait)
-        this.tuples.add(t);
+        this.tuples.add(t.deepclone());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class CentralizedLinda implements Linda {
         lc.await();
 
         // Retourner le tuple pris
-        return lc.getTuple();
+        return lc.getTuple().deepclone();
     }
 
     @Override
@@ -127,7 +127,7 @@ public class CentralizedLinda implements Linda {
         lc.await();
 
         // Retourner le tuple lu
-        return lc.getTuple();
+        return lc.getTuple().deepclone();
     }
 
     @Override
@@ -135,7 +135,7 @@ public class CentralizedLinda implements Linda {
         for (Tuple t : this.tuples) {
             if (t.matches(template)) {
                 this.tuples.remove(t);
-                return t;
+                return t.deepclone();
             }
         }
         return null;
@@ -145,7 +145,7 @@ public class CentralizedLinda implements Linda {
     public Tuple tryRead(Tuple template) {
         for (Tuple t : this.tuples) {
             if (t.matches(template)) {
-                return t;
+                return t.deepclone();
             }
         }
         return null;
@@ -156,7 +156,7 @@ public class CentralizedLinda implements Linda {
         Collection<Tuple> result = new ArrayList<>();
         Tuple tuple;
         while ((tuple = tryTake(template)) != null) {
-            result.add(tuple);
+            result.add(tuple); // tryTake() appelle déjà deepclone()
         }
         return result;
     }
@@ -166,7 +166,7 @@ public class CentralizedLinda implements Linda {
         Collection<Tuple> result = new ArrayList<>();
         for (Tuple tuple : this.tuples) {
             if (tuple.matches(template)) {
-                result.add(tuple);
+                result.add(tuple.deepclone());
             }
         }
         return result;
